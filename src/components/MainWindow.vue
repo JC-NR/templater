@@ -24,7 +24,8 @@
               :ref="ID"
               v-model="Editors[ID].Content"
               @init="editorInit"
-              lang="markdown"
+              @input="setChanged"
+              :lang="Editors[ID].Type"
               theme="chrome"
             >
             </editor>
@@ -33,6 +34,7 @@
       </ph-pane-group>
     </ph-window-content>
     <ph-toolbar type="footer"></ph-toolbar>
+    <div class="hidden">{{hasMod}} / {{counter}}</div>
   </ph-window>
 </template>
 
@@ -56,6 +58,7 @@ export default {
       shown: {
         sidebar: true
       },
+      counter: 0,
       EditorList: [],
       Editors: {},
       selEdit: ''
@@ -65,7 +68,8 @@ export default {
   methods: {
     editorInit: function () {
       require('brace/ext/language_tools') //language extension prerequsite...
-      require('brace/mode/markdown')    //language
+      require('brace/mode/handlebars')    //language
+      require('brace/mode/hjson')    //language
       require('brace/theme/chrome')
       require('brace/ext/searchbox')
     },
@@ -101,19 +105,35 @@ export default {
 
       if (fileNames !== undefined) {
         var fileName = fileNames[0];
-        fs.readFile(fileName, 'utf8', function (err, data) {
-          var ID = fileName;
-          vm.createEdit( {
-            ID: ID,
-            Title: path.basename(ID),
-            Path: ID,
-            New: false,
-            Changed: false,
-            Content: data
-          });
-          vm.selEdit = ID;
+
+        var data = fs.readFileSync(fileName, 'utf8');
+        var ID = fileName;
+        var ext = path.extname(ID);
+        vm.createEdit( {
+          ID: ID,
+          Title: path.basename(ID),
+          Path: ID,
+          Type: ( ( ext.toLowerCase() === '.json' ) ? 'hjson' : 'handlebars' ),
+          New: false,
+          Changed: false,
+          Content: data
         });
+        vm.selEdit = ID;
       }
+    },
+
+    hasMod: function() {
+      let vm = this;
+      // eslint-disable-next-line
+      let ct = vm.counter++;
+      var mod  = vm.EditorList.reduce((prev, key) => (prev || vm.Editors[key].Changed), false);
+      return mod;
+    },
+
+    setChanged: function(content) {
+      let vm = this;
+      vm.modifyEdit({ ID: vm.selEdit, Changed: true });
+      vm.$forceUpdate();
     },
 
     createEdit(payload) {
@@ -124,7 +144,7 @@ export default {
     },
     modifyEdit(payload) {
       var vm = this;
-      vm.Editors[payload.ID] = {...vm.Editors[payload.ID], ...payload};      
+      vm.Editors[payload.ID] = {...vm.Editors[payload.ID], ...payload};
     },
     deleteEdit(payload) {
       var vm = this;
