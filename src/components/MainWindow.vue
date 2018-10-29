@@ -5,6 +5,7 @@
     <ph-window-content>
       <ph-pane-group>
         <ph-pane size="sm" :sidebar="true"  :class="{hidden: !shown.sidebar}" style="overflow-y:auto;">
+          <VueTree :editors="Editors"/>
         </ph-pane>
         <ph-pane>
           <ph-tab-group>
@@ -41,13 +42,14 @@
 <script>
 import fs from "fs"
 import * as path from 'path'
+import VueTree from "./VueTree.vue";
 import { remote, ipcRenderer } from "electron"
 const { getCurrentWindow, dialog, Menu, MenuItem, shell } = remote
 require('electron-disable-file-drop');
 
 export default {
   components: {
-    // VueTree,
+    VueTree,
     editor: require('vue2-ace-editor')
   },
 
@@ -122,6 +124,20 @@ export default {
       }
     },
 
+    toSave: function() {
+      var vm = this;
+      let Sel = vm.selEdit;
+      if (Sel != "") {
+        let Item = vm.Editors[Sel];
+        if (Item.Changed) {
+            // eslint-disable-next-line
+          fs.writeFileSync(Item.Path, Item.Content);
+          vm.modifyEdit( { ID: Sel, Changed: false })
+          vm.$forceUpdate();
+        }
+      }
+    },
+
     hasMod: function() {
       let vm = this;
       // eslint-disable-next-line
@@ -138,18 +154,18 @@ export default {
 
     createEdit(payload) {
       var vm = this;
-      vm.Editors[payload.ID] = payload;
+      vm.$set(vm.Editors,payload.ID,payload);
       if (vm.EditorList.indexOf(payload.ID) === -1)
         vm.EditorList.push(payload.ID);
     },
     modifyEdit(payload) {
       var vm = this;
-      vm.Editors[payload.ID] = {...vm.Editors[payload.ID], ...payload};
+      vm.$set(vm.Editors,payload.ID,{...vm.Editors[payload.ID], ...payload});
     },
     deleteEdit(payload) {
       var vm = this;
       vm.EditorList = vm.EditorList.filter(value => value !== payload.ID)
-      delete vm.Editors[payload.ID];
+      vm.$Delete(vm.Editors, payload.ID);
     },
   },
 
@@ -161,6 +177,7 @@ export default {
         label: 'Fichier',
           submenu: [
             { label:'Importer Fichier', accelerator: 'CommandOrControl+O', click: vm.toLoad },
+            { label:'Enregistrer', accelerator: 'CommandOrControl+S', click: vm.toSave },
             {type: 'separator'},
             { label:'Quitter', role: 'quit'}
         ]
