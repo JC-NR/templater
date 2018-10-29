@@ -1,7 +1,9 @@
 <template lang="html">
     <SlVueTree
+      ref="MyTree"
       :value="paths"
       @nodeclick="nodeClick"
+      @nodedblclick="nodeDblClick"
       @nodecontextmenu="nodeContextMenu">
       <template slot="toggle" slot-scope="{ node }">
         <span v-if="!node.isLeaf">
@@ -9,6 +11,11 @@
           <ph-icon icon="down-open"  v-else-if="node.isExpanded"></ph-icon>
         </span>
       </template> 
+      <template slot="sidebar" slot-scope="{ node }">
+        <span v-if="node.data && node.data.action">
+          <ph-icon icon="check"></ph-icon>
+        </span>
+      </template>
     </SlVueTree>
 </template>
 
@@ -47,6 +54,25 @@ export default {
         vm.$emit('clicknode', event, node);
       }
     },
+    nodeDblClick: function(node, event) {
+      let vm = this;
+      if (node.isLeaf) {
+        let actions = {};
+        let typ = node.data.type;
+        let pat = node.data.path;
+        actions[typ] = pat;
+        vm.$refs.MyTree.traverse((node, nodeModel, path) => {
+          if (node.data.type === typ) {
+            vm.$set(nodeModel.data, 'action', (node.data.path === pat));
+          } else {
+            if (node.data.action) {
+              actions[node.data.type] = node.data.path;
+            }
+          }
+        })
+        vm.$emit('actionset', actions);
+      }
+    },
     nodeContextMenu: function(node, event) {
       let vm = this;
       if (node.isLeaf) {
@@ -66,31 +92,48 @@ export default {
     makeTree: function() {
       let vm = this;
       let tmpl = [], dset = [];
+      let actTmpl = true;
+      let actDset = true;
+      let actions = {};
 
       for(let ID in vm.editors) {
         let item = vm.editors[ID]
         if (item.Type === 'hjson') {
+          let action = false;
+          if (actDset) {
+            actions['hjson'] = item.Path;
+            action = true;
+            actDset = false;
+          }
           dset.push({
             title: item.Title, 
             isLeaf: true, 
             isExpanded: true,
             isDraggable: false,
-            isSelectable: true,
+            isSelectable: false,
             data: {
               path: item.Path,
               type: item.Type,
+              action: action
             }
           });
         } else if (item.Type === 'handlebars') {
+          let action = false;
+          if (actTmpl) {
+            actions['handlebars'] = item.Path;
+            action = true;
+            actTmpl = false;
+          }
           tmpl.push({
             title: item.Title, 
             isLeaf: true, 
             isExpanded: true,
             isDraggable: false,
-            isSelectable: true,
+            isSelectable: false,
             data: {
               path: item.Path,
               type: item.Type,
+              action: action
             }
           });
         }
@@ -119,7 +162,8 @@ export default {
               type: "DIRECTORY",
           }
         },
-      ]
+      ];
+      vm.$emit('actionset', actions);
     },
 
   },
@@ -171,8 +215,8 @@ export default {
 }
 
 .sl-vue-tree-selected > .sl-vue-tree-node-item {
-    background-color: #4a4c4d;
-    color: white;
+    /* background-color: #4a4c4d;
+    color: white; */
 }
 
 .sl-vue-tree-node-item:hover,

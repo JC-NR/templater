@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, protocol, BrowserWindow } from 'electron'
+import { app, protocol, BrowserWindow, ipcMain } from 'electron'
 import {
   createProtocol,
   installVueDevtools
@@ -10,6 +10,7 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win
+let showVisu
 
 // Standard scheme must be registered before the app is ready
 protocol.registerStandardSchemes(['app'], { secure: true })
@@ -29,7 +30,22 @@ function createWindow () {
 
   win.on('closed', () => {
     win = null
+    if (showVisu)
+      showVisu.close()
   })
+}
+
+function createVisu () {
+  // Create the browser window.
+  showVisu = new BrowserWindow({
+    width: 400,
+    height: 300,
+    show: false
+  })
+
+  showVisu.setMenu(null);
+  showVisu.on('closed', function() { showVisu = null });
+  showVisu.once('ready-to-show', function() { showVisu.show(); });
 }
 
 // Quit when all windows are closed.
@@ -46,6 +62,7 @@ app.on('activate', () => {
   // dock icon is clicked and there are no other windows open.
   if (win === null) {
     createWindow()
+    createVisu()
   }
 })
 
@@ -58,6 +75,7 @@ app.on('ready', async () => {
     await installVueDevtools()
   }
   createWindow()
+  createVisu()
 })
 
 // Exit cleanly on request from parent process in development mode.
@@ -74,3 +92,12 @@ if (isDevelopment) {
     })
   }
 }
+
+ipcMain.on('show-visu', function(event, arg) {
+
+  if (showVisu === null) {
+    createVisu()
+  }
+  showVisu.loadURL("data:text/html;charset=utf-8," + encodeURI(arg));
+
+})
