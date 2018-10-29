@@ -98,6 +98,7 @@ ipcMain.on('show-visu', function(event, arg) {
   if (showVisu === null) {
     createVisu()
   }
+  showVisu.setMenu(null);
   showVisu.loadURL("data:text/html;charset=utf-8," + encodeURI(arg));
 
 })

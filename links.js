@@ -48,5 +48,9 @@ links = {
 
 	Markdown: [
 		"https://github.com/evbacher/gd2md-html/wiki",
-	]
+	],
+
+	MJML: [
+		"https://mjml.io/",
+	],
 }
