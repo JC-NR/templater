@@ -33,6 +33,15 @@ function createWindow () {
     if (showVisu)
       showVisu.close()
   })
+
+  win.webContents.on('will-navigate', (ev, str) => {
+    ev.preventDefault()
+    let re = /^file\:\/\/\//;
+    if (str.match(re)) {
+      let fic = str.replace(re,'');
+      win.webContents.send('fic-drop', fic)
+    }
+  })
 }
 
 function createVisu () {

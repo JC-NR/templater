@@ -47,7 +47,6 @@ import Hjson from "hjson";
 import HandleBars from "handlebars";
 import { remote, ipcRenderer } from "electron"
 const { getCurrentWindow, dialog, Menu, MenuItem, shell } = remote
-require('electron-disable-file-drop');
 
 export default {
   components: {
@@ -99,6 +98,24 @@ export default {
       }
       vm.selEdit = Sel;
       vm.deleteEdit({ ID });
+    },
+
+    toDrop: function(fic) {
+      let fileName = path.normalize(fic);
+      let vm = this;
+      var data = fs.readFileSync(fileName, 'utf8');
+      var ID = fileName;
+      var ext = path.extname(ID);
+      vm.createEdit( {
+        ID: ID,
+        Title: path.basename(ID),
+        Path: ID,
+        Type: ( ( ext.toLowerCase() === '.json' ) ? 'hjson' : 'handlebars' ),
+        New: false,
+        Changed: false,
+        Content: data
+      });
+      vm.selEdit = ID;
     },
 
     toLoad: function() {
@@ -185,7 +202,7 @@ export default {
     deleteEdit(payload) {
       var vm = this;
       vm.EditorList = vm.EditorList.filter(value => value !== payload.ID)
-      vm.$Delete(vm.Editors, payload.ID);
+      vm.$delete(vm.Editors, payload.ID);
     },
   },
 
@@ -208,6 +225,10 @@ export default {
 
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
+
+    ipcRenderer.on('fic-drop', function(ev, file) {
+      vm.toDrop(file);
+    });
 
   }
 

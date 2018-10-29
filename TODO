@@ -1,6 +1,7 @@
 [] Gestion des images
 [] Intercept images (+base64)
 [] Export vers Mongo
-[] Drag n Drop
 [] Snippet
 [] From / To / Title
+
+[X] Drag n Drop

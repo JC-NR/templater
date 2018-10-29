@@ -1,6 +1,6 @@
 {
   "name": "templater",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -11,7 +11,6 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
-    "electron-disable-file-drop": "^1.0.2",
     "handlebars": "^4.0.12",
     "hjson": "^3.1.1",
     "photonkit": "^0.1.2",
