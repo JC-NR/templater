@@ -56,7 +56,7 @@ export default {
     },
     nodeDblClick: function(node, event) {
       let vm = this;
-      if (node.isLeaf) {
+      if (node.isLeaf && node.data.type !== 'image') {
         let actions = {};
         let typ = node.data.type;
         let pat = node.data.path;
@@ -91,52 +91,32 @@ export default {
     },
     makeTree: function() {
       let vm = this;
-      let tmpl = [], dset = [];
-      let actTmpl = true;
-      let actDset = true;
+      let swt = { 'hjson': { act: true, tab: [] }, 'handlebars': { act: true, tab: [] }, 'image': { act: true, tab: [] }};
       let actions = {};
 
       for(let ID in vm.editors) {
         let item = vm.editors[ID]
-        if (item.Type === 'hjson') {
-          let action = false;
-          if (actDset) {
-            actions['hjson'] = item.Path;
+        let TYPE = item.Type
+        let action = false;
+        if (swt[TYPE].act) {
+          if (TYPE !== 'image'){
+            actions[TYPE] = item.Path;
             action = true;
-            actDset = false;
           }
-          dset.push({
-            title: item.Title, 
-            isLeaf: true, 
-            isExpanded: true,
-            isDraggable: false,
-            isSelectable: false,
-            data: {
-              path: item.Path,
-              type: item.Type,
-              action: action
-            }
-          });
-        } else if (item.Type === 'handlebars') {
-          let action = false;
-          if (actTmpl) {
-            actions['handlebars'] = item.Path;
-            action = true;
-            actTmpl = false;
-          }
-          tmpl.push({
-            title: item.Title, 
-            isLeaf: true, 
-            isExpanded: true,
-            isDraggable: false,
-            isSelectable: false,
-            data: {
-              path: item.Path,
-              type: item.Type,
-              action: action
-            }
-          });
+          swt[TYPE].act = false;
         }
+        swt[TYPE].tab.push({
+          title: item.Title, 
+          isLeaf: true, 
+          isExpanded: true,
+          isDraggable: false,
+          isSelectable: false,
+          data: {
+            path: item.Path,
+            type: item.Type,
+            action: action
+          }
+        });
       }
 
       vm.paths = [
@@ -146,7 +126,7 @@ export default {
           isExpanded: true,
           isDraggable: false,
           isSelectable: false,
-          children: tmpl, 
+          children: swt['handlebars'].tab, 
           data: { 
               type: "DIRECTORY",
           }
@@ -157,7 +137,18 @@ export default {
           isExpanded: true,
           isDraggable: false,
           isSelectable: false,
-          children: dset, 
+          children: swt['hjson'].tab, 
+          data: { 
+              type: "DIRECTORY",
+          }
+        },
+        {
+          title: "Images", 
+          isLeaf: false, 
+          isExpanded: true,
+          isDraggable: false,
+          isSelectable: false,
+          children: swt['image'].tab, 
           data: { 
               type: "DIRECTORY",
           }

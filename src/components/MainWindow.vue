@@ -22,6 +22,7 @@
           </ph-tab-group>
           <div v-for="ID in EditorList" :name="ID" :key="ID" class="expanded" :class="{hidden: selEdit!=ID}" >
             <editor
+              v-if="Editors[ID].Type !== 'image'"
               :ref="ID"
               v-model="Editors[ID].Content"
               @init="editorInit"
@@ -30,6 +31,7 @@
               theme="chrome"
             >
             </editor>
+            <img v-else :src="makeImg(ID)" alt="ID" class="Image"/>
           </div>
         </ph-pane>
       </ph-pane-group>
@@ -70,6 +72,9 @@ export default {
   },
 
   methods: {
+    makeImg: function(ID) {
+      return 'data:image/png;base64,' + this.Editors[ID].Content;
+    },
     setTreeActions: function(payload) {
       let vm = this;
       vm.$set(vm, 'TreeActions', payload);
@@ -100,17 +105,40 @@ export default {
       vm.deleteEdit({ ID });
     },
 
-    toDrop: function(fic) {
+    toOpen: function(fic) {
       let fileName = path.normalize(fic);
       let vm = this;
-      var data = fs.readFileSync(fileName, 'utf8');
-      var ID = fileName;
-      var ext = path.extname(ID);
+      let ext = path.extname(fileName);
+
+      let typ;
+      switch(ext.toLowerCase()) {
+        case '.hjson':
+        case '.json':
+          typ = 'hjson';
+          break;
+        case '.jpg':
+        case '.jpeg':
+        case '.png':
+          typ = 'image';
+          break;
+        default:
+          typ = 'handlebars';
+      }
+
+      let data;
+      if (typ === 'image') {
+        data = Buffer.from(fs.readFileSync(fileName)).toString('base64')
+      } else {
+        data = fs.readFileSync(fileName, 'utf8');
+      }
+
+      let ID = fileName;
+
       vm.createEdit( {
         ID: ID,
         Title: path.basename(ID),
         Path: ID,
-        Type: ( ( ext.toLowerCase() === '.json' ) ? 'hjson' : 'handlebars' ),
+        Type: typ,
         New: false,
         Changed: false,
         Content: data
@@ -125,27 +153,14 @@ export default {
           'openFile'
         ],
         filters: [
-          { name: 'Template', extensions: ['html','htm','htx'] },
+          { name: 'Templates', extensions: ['html','htm','htx'] },
           { name: 'Données de test', extensions: ['json','hjson'] },
+          { name: 'Images', extensions: ['jpg','jpeg','png'] },
         ]
       });
 
       if (fileNames !== undefined) {
-        var fileName = fileNames[0];
-
-        var data = fs.readFileSync(fileName, 'utf8');
-        var ID = fileName;
-        var ext = path.extname(ID);
-        vm.createEdit( {
-          ID: ID,
-          Title: path.basename(ID),
-          Path: ID,
-          Type: ( ( ext.toLowerCase() === '.json' ) ? 'hjson' : 'handlebars' ),
-          New: false,
-          Changed: false,
-          Content: data
-        });
-        vm.selEdit = ID;
+        vm.toOpen(fileNames[0]);
       }
     },
 
@@ -227,7 +242,7 @@ export default {
     Menu.setApplicationMenu(menu);
 
     ipcRenderer.on('fic-drop', function(ev, file) {
-      vm.toDrop(file);
+      vm.toOpen(file);
     });
 
   }
@@ -248,5 +263,9 @@ export default {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+}
+.Image {
+  max-width: 100%;
+  max-height: calc(100% - 26px) !important;
 }
 </style>
