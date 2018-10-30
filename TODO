@@ -1,8 +1,9 @@
-[] Click Sidebar
-[] Intercept images (+base64)
+[] Projets
 [] Export vers Mongo
 [] Snippet
 [] From / To / Title
 
+[X] Click Sidebar
+[X] Intercept images (+base64)
 [X] Gestion des images
 [X] Drag n Drop

@@ -5,7 +5,7 @@
     <ph-window-content>
       <ph-pane-group>
         <ph-pane size="sm" :sidebar="true"  :class="{hidden: !shown.sidebar}" style="overflow-y:auto;">
-          <VueTree :editors="Editors" @actionset="setTreeActions"/>
+          <VueTree :editors="Editors" @clicknode="nodeClick" @actionset="setTreeActions"/>
         </ph-pane>
         <ph-pane>
           <ph-tab-group>
@@ -72,6 +72,11 @@ export default {
   },
 
   methods: {
+    nodeClick: function(e,n) {
+      let vm = this;
+      let ID = path.normalize(n.data.path);
+      vm.selEdit = ID;
+    },
     makeImg: function(ID) {
       return 'data:image/png;base64,' + this.Editors[ID].Content;
     },
