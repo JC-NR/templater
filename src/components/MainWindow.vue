@@ -167,11 +167,31 @@ export default {
     toHTM: function() {
       let vm = this;
       if ('handlebars' in vm.TreeActions) {
+        // Recup JSON
         let hjs = ('hjson' in vm.TreeActions) ? vm.Editors[vm.TreeActions['hjson']].Content : '{IN:{}}';
         let js = Hjson.parse(hjs);
 
+        // Recup Template
         let template = HandleBars.compile(vm.Editors[vm.TreeActions['handlebars']].Content);
         let result = template(js);
+
+        // Interception Images
+        var CID = /cid:(.*?)["']/gm;
+        var CIDS;
+        var done = {};
+
+        while ((CIDS = CID.exec(result)) !== null) {
+          console.dir(CIDS);
+          if (!(CIDS[1] in done)) {
+            for (let ID in vm.Editors) {
+              if ((vm.Editors[ID].Type === 'image') && (CIDS[1] !== "") && (vm.Editors[ID].Title === CIDS[1])) {
+                result = result.replace(new RegExp('cid:'+CIDS[1],'g'), vm.makeImg(ID));
+              }
+            }
+            done[CIDS[1]] = true;
+          }
+        }
+        console.log(result);
         ipcRenderer.send('show-visu', result);
       }
     },

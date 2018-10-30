@@ -1,7 +1,8 @@
-[] Gestion des images
+[] Click Sidebar
 [] Intercept images (+base64)
 [] Export vers Mongo
 [] Snippet
 [] From / To / Title
 
+[X] Gestion des images
 [X] Drag n Drop
