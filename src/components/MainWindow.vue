@@ -16,18 +16,18 @@
               :active="ID==selEdit"
               :title="Editors[ID].Path"
               @click.native="Select(ID)"
-              @cancel="toClose(ID)">
+              @cancel="toHide(ID)">
               {{Editors[ID].Title}}{{Editors[ID].Changed?"*":""}}
             </ph-tab-item>
           </ph-tab-group>
-          <div v-for="ID in EditorList" :name="ID" :key="ID" class="expanded" :class="{hidden: selEdit!=ID}" >
+          <div v-for="(Edi, ID) in Editors" :name="ID" :key="ID" class="expanded" :class="{hidden: selEdit!=ID}" >
             <editor
-              v-if="Editors[ID].Type !== 'image'"
+              v-if="Edi.Type !== 'image'"
               :ref="ID"
-              v-model="Editors[ID].Content"
+              v-model="Edi.Content"
               @init="editorInit"
               @input="setChanged"
-              :lang="Editors[ID].Type"
+              :lang="Edi.Type"
               theme="chrome"
             >
             </editor>
@@ -75,6 +75,7 @@ export default {
     nodeClick: function(e,n) {
       let vm = this;
       let ID = path.normalize(n.data.path);
+      vm.toShow(ID);
       vm.selEdit = ID;
     },
     makeImg: function(ID) {
@@ -98,16 +99,34 @@ export default {
       vm.selEdit = id;
     },
 
+    toShow: function(ID) {
+      let vm = this;
+      if (vm.EditorList.indexOf(ID) === -1) {
+        vm.EditorList.push(ID);
+      }
+    },
+    toHide: function(ID) {
+      let vm = this;
+      let Sel = "";
+      for(let item in vm.EditorList) {
+        if (vm.EditorList[item] != ID ) {
+          Sel = vm.EditorList[item];
+        }
+      }
+      vm.hideEdit({ ID });
+      vm.Select(Sel);
+    },
+
     toClose: function(ID) {
       let vm = this;
       let Sel = "";
-      for(let item in vm.Editors) {
-        if (item != ID ) {
-          Sel = item;
+      for(let item in vm.EditorList) {
+        if (vm.EditorList[item] != ID ) {
+          Sel = vm.EditorList[item];
         }
       }
-      vm.selEdit = Sel;
       vm.deleteEdit({ ID });
+      vm.Select(Sel);
     },
 
     toOpen: function(fic) {
@@ -238,6 +257,10 @@ export default {
     modifyEdit(payload) {
       var vm = this;
       vm.$set(vm.Editors,payload.ID,{...vm.Editors[payload.ID], ...payload});
+    },
+    hideEdit(payload) {
+      var vm = this;
+      vm.EditorList = vm.EditorList.filter(value => value !== payload.ID)
     },
     deleteEdit(payload) {
       var vm = this;

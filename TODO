@@ -1,8 +1,11 @@
 [] Projets
+ [] DnD Dossier
+ [] Xml
 [] Export vers Mongo
 [] Snippet
 [] From / To / Title
 
+[X] Show/Hide Sidebar
 [X] Click Sidebar
 [X] Intercept images (+base64)
 [X] Gestion des images
