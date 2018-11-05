@@ -284,6 +284,15 @@ export default {
             { label:'Quitter', role: 'quit'}
         ]
       },
+      {
+        label: 'Projet',
+          submenu: [
+            { label:'Nouveau projet', click: vm.NewProject },
+            { label:'Ouvrir projet', click: vm.OpenProject },
+            { label:'Sauver projet', click: vm.SaveProject },
+            { label:'Fermer projet', click:vm.CloseProject },
+        ]
+      },
     ];
 
     const menu = Menu.buildFromTemplate(template);
