@@ -1,6 +1,7 @@
 <template>
   <ph-window>
     <ph-toolbar type="header">
+      {{ProjectName}}{{(ProjectName && hasMod)?"*":""}}
     </ph-toolbar>
     <ph-window-content>
       <ph-pane-group>
@@ -67,11 +68,33 @@ export default {
       EditorList: [],
       Editors: {},
       TreeActions: {},
+      ProjectName: '',
       selEdit: ''
     }
   },
 
+  computed: {
+    hasMod: function() {
+      let vm = this;
+      // eslint-disable-next-line
+      let ct = vm.counter++;
+      var mod  = Object.values(vm.Editors).reduce((prev, key) => (prev || key.Changed), false);
+      return mod;
+    },
+  },
+
   methods: {
+    NewProject: function() {
+      // prompt("Test");
+    },
+    OpenProject: function() {
+      // Xml
+    },
+    SaveProject: function() {},
+    CloseProject: function() {
+      this.ProjectName = "";
+    },
+
     nodeClick: function(e,n) {
       let vm = this;
       let ID = path.normalize(n.data.path);
@@ -232,14 +255,6 @@ export default {
           vm.$forceUpdate();
         }
       }
-    },
-
-    hasMod: function() {
-      let vm = this;
-      // eslint-disable-next-line
-      let ct = vm.counter++;
-      var mod  = vm.EditorList.reduce((prev, key) => (prev || vm.Editors[key].Changed), false);
-      return mod;
     },
 
     setChanged: function(content) {

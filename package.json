@@ -1,6 +1,10 @@
 {
   "name": "templater",
-  "version": "0.4.2",
+  "version": "0.4.3",
+  "description": "Templating system (hjson+handlebars)",
+  "author": {
+    "name": "Jérôme CHERY"
+  },
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
