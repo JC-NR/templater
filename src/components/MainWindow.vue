@@ -290,7 +290,16 @@ export default {
     Menu.setApplicationMenu(menu);
 
     ipcRenderer.on('fic-drop', function(ev, file) {
-      vm.toOpen(file);
+      if (fs.existsSync(file)) {
+        if (fs.lstatSync(file).isDirectory()) {
+          fs.readdirSync(file).forEach(fic => {
+            vm.toOpen(file + '/' + fic);
+          })
+        } else {
+          vm.toOpen(file);
+        }
+      }
+      
     });
 
   }

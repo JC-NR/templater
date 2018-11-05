@@ -1,9 +1,10 @@
 [] Projets
- [] DnD Dossier
+ [X] DnD Dossier
  [] Xml
 [] Export vers Mongo
 [] Snippet
-[] From / To / Title
+[] MetaData
+ [] From / To / Title
 
 [X] Show/Hide Sidebar
 [X] Click Sidebar
