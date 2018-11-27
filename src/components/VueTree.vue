@@ -56,7 +56,7 @@ export default {
     },
     nodeDblClick: function(node, event) {
       let vm = this;
-      if (node.isLeaf && node.data.type !== 'image') {
+      if (node.isLeaf && node.data.type !== 'image' && node.data.type !== 'html') {
         let actions = {};
         let typ = node.data.type;
         let pat = node.data.path;
@@ -91,7 +91,7 @@ export default {
     },
     makeTree: function() {
       let vm = this;
-      let swt = { 'hjson': { act: true, tab: [] }, 'handlebars': { act: true, tab: [] }, 'image': { act: true, tab: [] }};
+      let swt = { 'hjson': { act: true, tab: [] }, 'handlebars': { act: true, tab: [] }, 'html': { act: true, tab: [] }, 'image': { act: true, tab: [] }};
       let actions = {};
 
       for(let ID in vm.editors) {
@@ -99,7 +99,7 @@ export default {
         let TYPE = item.Type
         let action = false;
         if (swt[TYPE].act) {
-          if (TYPE !== 'image'){
+          if ((TYPE !== 'image') && (TYPE !== 'html')) {
             actions[TYPE] = item.Path;
             action = true;
           }
@@ -127,6 +127,17 @@ export default {
           isDraggable: false,
           isSelectable: false,
           children: swt['handlebars'].tab, 
+          data: { 
+              type: "DIRECTORY",
+          }
+        },
+        {
+          title: "Communs", 
+          isLeaf: false, 
+          isExpanded: true,
+          isDraggable: false,
+          isSelectable: false,
+          children: swt['html'].tab, 
           data: { 
               type: "DIRECTORY",
           }

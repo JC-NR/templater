@@ -168,6 +168,9 @@ export default {
         case '.png':
           typ = 'image';
           break;
+        case '.htx':
+          typ = 'html';
+          break;
         default:
           typ = 'handlebars';
       }
@@ -200,7 +203,8 @@ export default {
           'openFile'
         ],
         filters: [
-          { name: 'Templates', extensions: ['html','htm','htx'] },
+          { name: 'Templates', extensions: ['html','htm'] },
+          { name: 'Communs', extensions: ['htx'] },
           { name: 'Données de test', extensions: ['json','hjson'] },
           { name: 'Images', extensions: ['jpg','jpeg','png'] },
         ]
