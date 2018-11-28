@@ -27,7 +27,6 @@
               :ref="ID"
               v-model="Edi.Content"
               @init="editorInit"
-              @input="setChanged"
               :lang="Edi.Type"
               theme="chrome"
             >
@@ -187,6 +186,7 @@ export default {
       vm.createEdit( {
         ID: ID,
         Title: path.basename(ID),
+        Ref: (vm.ProjectName ? vm.ProjectName + '/' : "") + path.basename(ID).replace(/\.[^/.]+$/, ""),
         Path: ID,
         Type: typ,
         New: false,
@@ -222,6 +222,14 @@ export default {
         let hjs = ('hjson' in vm.TreeActions) ? vm.Editors[vm.TreeActions['hjson']].Content : '{IN:{}}';
         let js = Hjson.parse(hjs);
 
+        // Register Partials
+        for (let edIN in vm.Editors) {
+          let edtr = vm.Editors[edIN];
+          if (edtr.Type === 'html') {
+            HandleBars.registerPartial(edtr.Ref, edtr.Content);
+          }
+        }
+
         // Recup Template
         let template = HandleBars.compile(vm.Editors[vm.TreeActions['handlebars']].Content);
         let result = template(js);
@@ -252,12 +260,12 @@ export default {
       let Sel = vm.selEdit;
       if (Sel != "") {
         let Item = vm.Editors[Sel];
-        if (Item.Changed) {
+        // if (Item.Changed) {
             // eslint-disable-next-line
           fs.writeFileSync(Item.Path, Item.Content);
           vm.modifyEdit( { ID: Sel, Changed: false })
           vm.$forceUpdate();
-        }
+        // }
       }
     },
 
@@ -320,6 +328,7 @@ export default {
     ipcRenderer.on('fic-drop', function(ev, file) {
       if (fs.existsSync(file)) {
         if (fs.lstatSync(file).isDirectory()) {
+          vm.ProjectName = path.basename(file);
           fs.readdirSync(file).forEach(fic => {
             vm.toOpen(file + '/' + fic);
           })
