@@ -84,14 +84,18 @@ export default {
 
   methods: {
     NewProject: function() {
-      // prompt("Test");
+      this.ProjectName = "Nouveau";
     },
     OpenProject: function() {
       // Xml
     },
     SaveProject: function() {},
     CloseProject: function() {
-      this.ProjectName = "";
+      let vm = this;
+      if (vm.ProjectName) {
+        Object.keys(vm.Editors).forEach(ID => vm.toClose(ID));
+      }
+      vm.ProjectName = "";
     },
 
     nodeClick: function(e,n) {
@@ -152,8 +156,9 @@ export default {
     },
 
     toOpen: function(fic) {
-      let fileName = path.normalize(fic);
       let vm = this;
+      if (!vm.ProjectName) return;
+      let fileName = path.normalize(fic);
       let ext = path.extname(fileName);
 
       let typ, lng = '';
@@ -332,6 +337,7 @@ export default {
     ipcRenderer.on('fic-drop', function(ev, file) {
       if (fs.existsSync(file)) {
         if (fs.lstatSync(file).isDirectory()) {
+          vm.CloseProject();
           vm.ProjectName = path.basename(file);
           fs.readdirSync(file).forEach(fic => {
             vm.toOpen(file + '/' + fic);
