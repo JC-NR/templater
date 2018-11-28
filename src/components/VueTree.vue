@@ -56,7 +56,7 @@ export default {
     },
     nodeDblClick: function(node, event) {
       let vm = this;
-      if (node.isLeaf && node.data.type !== 'image' && node.data.type !== 'html') {
+      if (node.isLeaf && node.data.type !== 'IMG' && node.data.type !== 'PART') {
         let actions = {};
         let typ = node.data.type;
         let pat = node.data.path;
@@ -91,7 +91,7 @@ export default {
     },
     makeTree: function() {
       let vm = this;
-      let swt = { 'hjson': { act: true, tab: [] }, 'handlebars': { act: true, tab: [] }, 'html': { act: true, tab: [] }, 'image': { act: true, tab: [] }};
+      let swt = { 'JSON': { act: true, tab: [] }, 'TPL': { act: true, tab: [] }, 'PART': { act: true, tab: [] }, 'IMG': { act: true, tab: [] }};
       let actions = {};
 
       for(let ID in vm.editors) {
@@ -99,7 +99,7 @@ export default {
         let TYPE = item.Type
         let action = false;
         if (swt[TYPE].act) {
-          if ((TYPE !== 'image') && (TYPE !== 'html')) {
+          if ((TYPE !== 'IMG') && (TYPE !== 'PART')) {
             actions[TYPE] = item.Path;
             action = true;
           }
@@ -126,7 +126,7 @@ export default {
           isExpanded: true,
           isDraggable: false,
           isSelectable: false,
-          children: swt['handlebars'].tab, 
+          children: swt['TPL'].tab, 
           data: { 
               type: "DIRECTORY",
           }
@@ -137,7 +137,7 @@ export default {
           isExpanded: true,
           isDraggable: false,
           isSelectable: false,
-          children: swt['html'].tab, 
+          children: swt['PART'].tab, 
           data: { 
               type: "DIRECTORY",
           }
@@ -148,7 +148,7 @@ export default {
           isExpanded: true,
           isDraggable: false,
           isSelectable: false,
-          children: swt['hjson'].tab, 
+          children: swt['JSON'].tab, 
           data: { 
               type: "DIRECTORY",
           }
@@ -159,7 +159,7 @@ export default {
           isExpanded: true,
           isDraggable: false,
           isSelectable: false,
-          children: swt['image'].tab, 
+          children: swt['IMG'].tab, 
           data: { 
               type: "DIRECTORY",
           }

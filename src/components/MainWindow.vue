@@ -23,11 +23,11 @@
           </ph-tab-group>
           <div v-for="(Edi, ID) in Editors" :name="ID" :key="ID" class="expanded" :class="{hidden: selEdit!=ID}" >
             <editor
-              v-if="Edi.Type !== 'image'"
+              v-if="Edi.Type !== 'IMG'"
               :ref="ID"
               v-model="Edi.Content"
               @init="editorInit"
-              :lang="Edi.Type"
+              :lang="Edi.Lang"
               theme="chrome"
             >
             </editor>
@@ -156,26 +156,29 @@ export default {
       let vm = this;
       let ext = path.extname(fileName);
 
-      let typ;
+      let typ, lng = '';
       switch(ext.toLowerCase()) {
         case '.hjson':
         case '.json':
-          typ = 'hjson';
+          typ = 'JSON';
+          lng = 'hjson';
           break;
         case '.jpg':
         case '.jpeg':
         case '.png':
-          typ = 'image';
+          typ = 'IMG';
           break;
         case '.htx':
-          typ = 'html';
+          typ = 'PART';
+          lng = 'handlebars';
           break;
         default:
-          typ = 'handlebars';
+          typ = 'TPL';
+          lng = 'handlebars';
       }
 
       let data;
-      if (typ === 'image') {
+      if (typ === 'IMG') {
         data = Buffer.from(fs.readFileSync(fileName)).toString('base64')
       } else {
         data = fs.readFileSync(fileName, 'utf8');
@@ -189,6 +192,7 @@ export default {
         Ref: (vm.ProjectName ? vm.ProjectName + '/' : "") + path.basename(ID).replace(/\.[^/.]+$/, ""),
         Path: ID,
         Type: typ,
+        Lang: lng,
         New: false,
         Changed: false,
         Content: data
@@ -217,21 +221,21 @@ export default {
 
     toHTM: function() {
       let vm = this;
-      if ('handlebars' in vm.TreeActions) {
+      if ('TPL' in vm.TreeActions) {
         // Recup JSON
-        let hjs = ('hjson' in vm.TreeActions) ? vm.Editors[vm.TreeActions['hjson']].Content : '{IN:{}}';
+        let hjs = ('JSON' in vm.TreeActions) ? vm.Editors[vm.TreeActions['JSON']].Content : '{IN:{}}';
         let js = Hjson.parse(hjs);
 
         // Register Partials
         for (let edIN in vm.Editors) {
           let edtr = vm.Editors[edIN];
-          if (edtr.Type === 'html') {
+          if (edtr.Type === 'PART') {
             HandleBars.registerPartial(edtr.Ref, edtr.Content);
           }
         }
 
         // Recup Template
-        let template = HandleBars.compile(vm.Editors[vm.TreeActions['handlebars']].Content);
+        let template = HandleBars.compile(vm.Editors[vm.TreeActions['TPL']].Content);
         let result = template(js);
 
         // Interception Images
@@ -243,7 +247,7 @@ export default {
           console.dir(CIDS);
           if (!(CIDS[1] in done)) {
             for (let ID in vm.Editors) {
-              if ((vm.Editors[ID].Type === 'image') && (CIDS[1] !== "") && (vm.Editors[ID].Title === CIDS[1])) {
+              if ((vm.Editors[ID].Type === 'IMG') && (CIDS[1] !== "") && (vm.Editors[ID].Title === CIDS[1])) {
                 result = result.replace(new RegExp('cid:'+CIDS[1],'g'), vm.makeImg(ID));
               }
             }
