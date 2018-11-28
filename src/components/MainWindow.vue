@@ -1,7 +1,7 @@
 <template>
   <ph-window>
     <ph-toolbar type="header">
-      {{ProjectName}}{{(ProjectName && hasMod)?"*":""}}
+      {{ProjectName}}{{(ProjectName && hasMod())?"*":""}}
     </ph-toolbar>
     <ph-window-content>
       <ph-pane-group>
@@ -18,7 +18,7 @@
               :title="Editors[ID].Path"
               @click.native="Select(ID)"
               @cancel="toHide(ID)">
-              {{Editors[ID].Title}}{{Editors[ID].Changed?"*":""}}
+              {{Editors[ID].Title}}{{Changed[ID]?"*":""}}
             </ph-tab-item>
           </ph-tab-group>
           <div v-for="(Edi, ID) in Editors" :name="ID" :key="ID" class="expanded" :class="{hidden: selEdit!=ID}" >
@@ -27,6 +27,7 @@
               :ref="ID"
               v-model="Edi.Content"
               @init="editorInit"
+              @input="setChanged"
               :lang="Edi.Lang"
               theme="chrome"
             >
@@ -37,7 +38,7 @@
       </ph-pane-group>
     </ph-window-content>
     <ph-toolbar type="footer"></ph-toolbar>
-    <div class="hidden">{{hasMod}} / {{counter}}</div>
+    <div class="hidden">{{hasMod()}} / {{counter}}</div>
   </ph-window>
 </template>
 
@@ -68,21 +69,25 @@ export default {
       Editors: {},
       TreeActions: {},
       ProjectName: '',
-      selEdit: ''
+      selEdit: '',
+      Changed: {}
     }
   },
 
   computed: {
-    hasMod: function() {
-      let vm = this;
-      // eslint-disable-next-line
-      let ct = vm.counter++;
-      var mod  = Object.values(vm.Editors).reduce((prev, key) => (prev || key.Changed), false);
-      return mod;
-    },
   },
 
   methods: {
+    hasMod: function() {
+      let vm = this;
+
+      for (let ID in vm.Changed) {
+        if (vm.Changed[ID]) {
+          return true;
+        }
+      }
+      return false;
+    },
     NewProject: function() {
       this.ProjectName = "Nouveau";
     },
@@ -199,7 +204,6 @@ export default {
         Type: typ,
         Lang: lng,
         New: false,
-        Changed: false,
         Content: data
       });
       vm.selEdit = ID;
@@ -269,10 +273,10 @@ export default {
       let Sel = vm.selEdit;
       if (Sel != "") {
         let Item = vm.Editors[Sel];
-        // if (Item.Changed) {
+        // if (vm.Changed[Sel]) {
             // eslint-disable-next-line
           fs.writeFileSync(Item.Path, Item.Content);
-          vm.modifyEdit( { ID: Sel, Changed: false })
+          vm.Changed[Sel] = false;
           vm.$forceUpdate();
         // }
       }
@@ -280,7 +284,7 @@ export default {
 
     setChanged: function(content) {
       let vm = this;
-      vm.modifyEdit({ ID: vm.selEdit, Changed: true });
+      vm.Changed[vm.selEdit] = true;
       vm.$forceUpdate();
     },
 
