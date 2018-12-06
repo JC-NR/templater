@@ -22,8 +22,15 @@
             </ph-tab-item>
           </ph-tab-group>
           <div v-for="(Edi, ID) in Editors" :name="ID" :key="ID" class="expanded" :class="{hidden: selEdit!=ID}" >
+            <img v-if="Edi.Type === 'IMG'" :src="makeImg(ID)" alt="ID" class="Image"/>
+            <div v-else-if="Edi.Type === 'META'">
+              Title : <input type="text" v-model="Edi.Content.title"><br/>
+              From : <input type="text" v-model="Edi.Content.from"><br/>
+              To : <input type="text" v-model="Edi.Content.to"><br/>
+              Bcc : <input type="text" v-model="Edi.Content.bcc"><br/>
+            </div>
             <editor
-              v-if="Edi.Type !== 'IMG'"
+              v-else
               :ref="ID"
               v-model="Edi.Content"
               @init="editorInit"
@@ -32,7 +39,6 @@
               theme="chrome"
             >
             </editor>
-            <img v-else :src="makeImg(ID)" alt="ID" class="Image"/>
           </div>
         </ph-pane>
       </ph-pane-group>
@@ -48,7 +54,8 @@ import * as path from 'path'
 import VueTree from "./VueTree.vue";
 import Hjson from "hjson";
 import HandleBars from "handlebars";
-import { remote, ipcRenderer } from "electron"
+import { remote, ipcRenderer } from "electron";
+import xml2js from "xml2js";
 const { getCurrentWindow, dialog, Menu, MenuItem, shell } = remote
 
 export default {
@@ -178,6 +185,9 @@ export default {
         case '.png':
           typ = 'IMG';
           break;
+        case '.xml':
+          typ = 'META';
+          break;
         case '.htx':
           typ = 'PART';
           lng = 'handlebars';
@@ -190,6 +200,17 @@ export default {
       let data;
       if (typ === 'IMG') {
         data = Buffer.from(fs.readFileSync(fileName)).toString('base64')
+      } else if (typ === 'META') {
+        let xml = fs.readFileSync(fileName, 'utf8');
+        var parser = new xml2js.Parser({explicitArray:false});
+        parser.parseString(xml, function (err, result) {
+          console.dir(result);
+          if (result.meta) {
+            data = result.meta;
+          } else {
+            data = { from: "", to:"", title:"", bcc: ""};
+          }
+        });
       } else {
         data = fs.readFileSync(fileName, 'utf8');
       }
@@ -218,6 +239,7 @@ export default {
         filters: [
           { name: 'Templates', extensions: ['html','htm'] },
           { name: 'Communs', extensions: ['htx'] },
+          { name: 'Meta-données', extensions: ['xml'] },
           { name: 'Données de test', extensions: ['json','hjson'] },
           { name: 'Images', extensions: ['jpg','jpeg','png'] },
         ]

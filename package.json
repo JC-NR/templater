@@ -1,6 +1,6 @@
 {
   "name": "templater",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "Templating system (hjson+handlebars)",
   "author": {
     "name": "Jérôme CHERY"
@@ -22,7 +22,8 @@
     "vue": "^2.5.17",
     "vue-photonkit": "^1.2.3",
     "vue2-ace-editor": "^0.0.11",
-    "vuex": "^3.0.1"
+    "vuex": "^3.0.1",
+    "xml2js": "^0.4.19"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.0.5",

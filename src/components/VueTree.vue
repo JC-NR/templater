@@ -56,7 +56,7 @@ export default {
     },
     nodeDblClick: function(node, event) {
       let vm = this;
-      if (node.isLeaf && node.data.type !== 'IMG' && node.data.type !== 'PART') {
+      if (node.isLeaf && node.data.type !== 'IMG' && node.data.type !== 'PART' && node.data.type !== 'META') {
         let actions = {};
         let typ = node.data.type;
         let pat = node.data.path;
@@ -91,7 +91,7 @@ export default {
     },
     makeTree: function() {
       let vm = this;
-      let swt = { 'JSON': { act: true, tab: [] }, 'TPL': { act: true, tab: [] }, 'PART': { act: true, tab: [] }, 'IMG': { act: true, tab: [] }};
+      let swt = { 'JSON': { act: true, tab: [] }, 'TPL': { act: true, tab: [] }, 'META': { act: true, tab: [] }, 'PART': { act: true, tab: [] }, 'IMG': { act: true, tab: [] }};
       let actions = {};
 
       for(let ID in vm.editors) {
@@ -99,7 +99,7 @@ export default {
         let TYPE = item.Type
         let action = false;
         if (swt[TYPE].act) {
-          if ((TYPE !== 'IMG') && (TYPE !== 'PART')) {
+          if ((TYPE !== 'IMG') && (TYPE !== 'PART') && (TYPE !== 'META')) {
             actions[TYPE] = item.Path;
             action = true;
           }
@@ -120,6 +120,17 @@ export default {
       }
 
       vm.paths = [
+        {
+          title: "Meta-données", 
+          isLeaf: false, 
+          isExpanded: true,
+          isDraggable: false,
+          isSelectable: false,
+          children: swt['META'].tab, 
+          data: { 
+              type: "DIRECTORY",
+          }
+        },
         {
           title: "Templates", 
           isLeaf: false, 
