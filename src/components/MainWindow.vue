@@ -297,7 +297,15 @@ export default {
         let Item = vm.Editors[Sel];
         // if (vm.Changed[Sel]) {
             // eslint-disable-next-line
-          fs.writeFileSync(Item.Path, Item.Content);
+          if(Item.Type === 'IMG') {
+
+          } else if (Item.Type === 'META') {
+            var builder = new xml2js.Builder();
+            var xml = builder.buildObject({meta:{...Item.Content}});
+            fs.writeFileSync(Item.Path, xml);
+          } else {
+            fs.writeFileSync(Item.Path, Item.Content);
+          }
           vm.Changed[Sel] = false;
           vm.$forceUpdate();
         // }

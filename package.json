@@ -1,6 +1,6 @@
 {
   "name": "templater",
-  "version": "0.4.6",
+  "version": "0.5.0",
   "description": "Templating system (hjson+handlebars)",
   "author": {
     "name": "Jérôme CHERY"
