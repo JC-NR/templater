@@ -128,8 +128,8 @@ export default {
               filename: ed.Title
             }
           }))
-          .map(data => vm.RWSend(data))
-          .delay(100)
+          .map(data => vm.RWSend(data).delay(100))
+          .delay(1000)
           .then(() => vm.RWInit())
           .catch(error => console.log(error));
       }
@@ -148,7 +148,7 @@ export default {
     RWInit: function(data) {
       let vm = this;
       return new Promise((resolve,reject) => {
-        request.get({ url: vm.URL + '/Mail/Templates', qs: data }, function(e,r,b) {
+        request.get({ url: vm.URL + '/Mail/Init', qs: data }, function(e,r,b) {
           if (e) return reject(e);
           return resolve(b);
         });
