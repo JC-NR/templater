@@ -56,6 +56,8 @@ import Hjson from "hjson";
 import HandleBars from "handlebars";
 import { remote, ipcRenderer } from "electron";
 import xml2js from "xml2js";
+import request from "request";
+import * as Promise from 'bluebird';
 const { getCurrentWindow, dialog, Menu, MenuItem, shell } = remote
 
 export default {
@@ -68,6 +70,7 @@ export default {
 
   data() {
     return {
+      URL: 'http://docker:1880',
       shown: {
         sidebar: true
       },
@@ -110,6 +113,48 @@ export default {
       vm.ProjectName = "";
     },
 
+    ToRedway: function() {
+      let vm = this;
+
+      if (vm.ProjectName) {
+        Promise.resolve()
+          .then(() => Object.keys(vm.Editors).map(ID => {
+            let ed = vm.Editors[ID];
+            return {
+              project: vm.ProjectName,
+              type: ed.Type,
+              name: ed.Ref,
+              content: ed.Content,
+              filename: ed.Title
+            }
+          }))
+          .map(data => vm.RWSend(data))
+          .delay(100)
+          .then(() => vm.RWInit())
+          .catch(error => console.log(error));
+      }
+    },
+
+    RWSend: function(data) {
+      let vm = this;
+      return new Promise((resolve,reject) => {
+        request.post({ url: vm.URL + '/Mail/Template', json: data }, function(e,r,b) {
+          if (e) return reject(e);
+          return resolve(b);
+        });
+      });
+    },
+
+    RWInit: function(data) {
+      let vm = this;
+      return new Promise((resolve,reject) => {
+        request.get({ url: vm.URL + '/Mail/Templates', qs: data }, function(e,r,b) {
+          if (e) return reject(e);
+          return resolve(b);
+        });
+      });
+    },
+    
     nodeClick: function(e,n) {
       let vm = this;
       let ID = path.normalize(n.data.path);
@@ -204,7 +249,7 @@ export default {
         let xml = fs.readFileSync(fileName, 'utf8');
         var parser = new xml2js.Parser({explicitArray:false});
         parser.parseString(xml, function (err, result) {
-          console.dir(result);
+          // console.dir(result);
           if (result.meta) {
             data = result.meta;
           } else {
@@ -275,7 +320,7 @@ export default {
         var done = {};
 
         while ((CIDS = CID.exec(result)) !== null) {
-          console.dir(CIDS);
+          // console.dir(CIDS);
           if (!(CIDS[1] in done)) {
             for (let ID in vm.Editors) {
               if ((vm.Editors[ID].Type === 'IMG') && (CIDS[1] !== "") && (vm.Editors[ID].Title === CIDS[1])) {
@@ -361,6 +406,12 @@ export default {
             { label:'Ouvrir projet', click: vm.OpenProject },
             { label:'Sauver projet', click: vm.SaveProject },
             { label:'Fermer projet', click:vm.CloseProject },
+        ]
+      },
+      {
+        label: 'Redway',
+          submenu: [
+            { label:'Envoyer et mettre en ligne', click: vm.ToRedway },
         ]
       },
     ];
