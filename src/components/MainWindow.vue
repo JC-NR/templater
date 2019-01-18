@@ -70,7 +70,7 @@ export default {
 
   data() {
     return {
-      URL: 'http://docker:1880',
+      URL: 'http://redway.nrco.fr:1880/qual',
       shown: {
         sidebar: true
       },
